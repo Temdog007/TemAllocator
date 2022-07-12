@@ -71,7 +71,8 @@ namespace TemAllocator
 	class AllocatorData
 	{
 	private:
-		std::mutex mutex;
+		using Mutex = std::recursive_mutex;
+		Mutex mutex;
 		FreeListNode *list;
 		void *data;
 		size_t used;
@@ -201,7 +202,8 @@ namespace TemAllocator
 
 	public:
 		AllocatorData() noexcept
-			: mutex(), list(nullptr), data(nullptr), used(0), len(0), allocationNum(0), policy(PlacementPolicy::Best)
+			: mutex(), list(nullptr), data(nullptr), used(0), len(0),
+			  allocationNum(0), policy(PlacementPolicy::Best)
 		{
 		}
 		AllocatorData(const AllocatorData &) = delete;
@@ -391,7 +393,7 @@ namespace TemAllocator
 
 		const size_t requestedSize = sizeof(T) * requestedCount;
 
-		std::lock_guard<std::mutex> g(ad.mutex);
+		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		// Align memory just to be safe
 		size_t size = std::max<size_t>(requestedSize, ALLOCATOR_ALIGNMENT);
@@ -436,7 +438,7 @@ namespace TemAllocator
 	template <class T>
 	T *Allocator<T>::reallocate(T *oldPtr, const size_t count)
 	{
-		std::lock_guard<std::mutex> g(ad.mutex);
+		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		if (oldPtr == nullptr)
 		{
@@ -528,7 +530,7 @@ namespace TemAllocator
 			return;
 		}
 
-		std::lock_guard<std::mutex> g(ad.mutex);
+		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		const size_t currentAddress = reinterpret_cast<size_t>(ptr);
 		const size_t headerAddress = currentAddress - sizeof(FreeListNode);
@@ -564,7 +566,7 @@ namespace TemAllocator
 		{
 			return 0;
 		}
-		std::lock_guard<std::mutex> g(ad.mutex);
+		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		const size_t currentAddress = reinterpret_cast<size_t>(ptr);
 		const size_t headerAddress = currentAddress - sizeof(FreeListNode);
