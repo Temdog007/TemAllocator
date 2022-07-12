@@ -150,4 +150,18 @@ namespace std
 			return value;
 		}
 	};
+
+	template <>
+	struct hash<TemAllocator::String32>
+	{
+		std::size_t operator()(const TemAllocator::String32 &s) const noexcept
+		{
+			std::size_t value = 0;
+			for (size_t i = 0; i < s.size(); ++i)
+			{
+				value += s[i] * std::pow(size_t(31), i);
+			}
+			return value;
+		}
+	};
 } // namespace std
