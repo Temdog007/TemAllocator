@@ -35,7 +35,10 @@ namespace TemAllocator
 {
 	using String = std::basic_string<char, std::char_traits<char>, Allocator<char>>;
 	using String32 = std::basic_string<char32_t, std::char_traits<char32_t>, Allocator<char32_t>>;
+
 	using StringStream = std::basic_stringstream<char, std::char_traits<char>, Allocator<char>>;
+	using OStringStream = std::basic_ostringstream<char, std::char_traits<char>, Allocator<char>>;
+	using IStringStream = std::basic_istringstream<char, std::char_traits<char>, Allocator<char>>;
 
 	template <typename T>
 	using List = std::vector<T, Allocator<T>>;
@@ -109,6 +112,9 @@ namespace TemAllocator
 
 	template <typename T>
 	using shared_ptr = std::shared_ptr<T>;
+
+	template <typename T>
+	using weak_ptr = std::weak_ptr<T>;
 
 	template <typename T, typename... Args>
 	static inline unique_ptr<T> make_unique(Args &&...args)
