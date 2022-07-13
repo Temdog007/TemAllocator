@@ -228,10 +228,10 @@ namespace TemAllocator
 
 	public:
 		weak_ptr() noexcept = default;
-		weak_ptr(const weak_ptr<T> &p) noexcept : ptr(p) {}
-		weak_ptr(weak_ptr<T> &&p) noexcept : ptr(std::move(p)) {}
+		weak_ptr(const weak_ptr<T> &p) noexcept : ptr(p.ptr) {}
+		weak_ptr(weak_ptr<T> &&p) noexcept : ptr(std::move(p.ptr)) {}
 
-		weak_ptr(const shared_ptr<T> &p) noexcept : ptr(p) {}
+		weak_ptr(const shared_ptr<T> &p) noexcept : ptr(p.ptr) {}
 
 		weak_ptr &operator=(const weak_ptr<T> &p) noexcept
 		{
