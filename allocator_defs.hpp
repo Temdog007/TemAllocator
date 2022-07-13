@@ -121,6 +121,9 @@ namespace TemAllocator
 	{
 		friend class weak_ptr<T>;
 
+		template <typename Y>
+		friend class shared_ptr;
+
 	private:
 		std::shared_ptr<T> ptr;
 
