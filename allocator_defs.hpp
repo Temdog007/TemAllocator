@@ -128,8 +128,8 @@ namespace TemAllocator
 		shared_ptr() noexcept : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
 		shared_ptr(T *t) : ptr(t, Deleter<T>(), Allocator<T>()) {}
 
-		shared_ptr(const shared_ptr &p) noexcept : ptr(p) {}
-		shared_ptr(shared_ptr &&p) noexcept : ptr(std::move(p)) {}
+		shared_ptr(const shared_ptr &p) noexcept : ptr(p.ptr) {}
+		shared_ptr(shared_ptr &&p) noexcept : ptr(std::move(p.ptr)) {}
 
 		shared_ptr(const weak_ptr<T> &w) : ptr(w.ptr) {}
 
