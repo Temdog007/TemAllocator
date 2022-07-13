@@ -101,6 +101,17 @@ namespace TemAllocator
 		{
 		}
 #endif
+
+		constexpr bool operator==(const Deleter &d) const noexcept
+		{
+			return true;
+		}
+
+		constexpr bool operator!=(const Deleter &d) const noexcept
+		{
+			return false;
+		}
+
 		void operator()(T *t) const
 		{
 			if (t == nullptr)
@@ -159,6 +170,26 @@ namespace TemAllocator
 		{
 			ptr = std::move(p.ptr);
 			return *this;
+		}
+
+		shared_ptr &operator=(const std::shared_ptr<T> &p)
+		{
+			if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+			{
+				ptr = p;
+				return *this;
+			}
+			throw std::runtime_error("Invalid shared pointer");
+		}
+
+		shared_ptr &operator=(std::shared_ptr<T> &&p)
+		{
+			if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+			{
+				ptr.swap(p);
+				return *this;
+			}
+			throw std::runtime_error("Invalid shared pointer");
 		}
 
 		shared_ptr &operator=(unique_ptr<T> &&uPtr) noexcept
