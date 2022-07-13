@@ -103,6 +103,10 @@ namespace TemAllocator
 #endif
 		void operator()(T *t) const
 		{
+			if (t == nullptr)
+			{
+				return;
+			}
 			destroyAndDeallocate(t);
 		}
 	};
