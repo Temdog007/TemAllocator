@@ -157,6 +157,9 @@ namespace TemAllocator
 			return *this;
 		}
 
+		T *get() { return ptr.get(); }
+		const T *get() const { return ptr.get(); }
+
 		T *operator->() { return ptr.operator->(); }
 		const T *operator->() const { return ptr.operator->(); }
 
@@ -215,37 +218,37 @@ namespace TemAllocator
 	template <typename A, typename B>
 	bool operator==(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
 	{
-		return a.ptr == b.ptr;
+		return a.get() == b.get();
 	}
 
 	template <typename A, typename B>
 	bool operator!=(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
 	{
-		return a.ptr != b.ptr;
+		return a.get() != b.get();
 	}
 
 	template <typename T>
 	bool operator==(const shared_ptr<T> &a, std::nullptr_t) noexcept
 	{
-		return a.ptr == nullptr;
+		return !a.ptr;
 	}
 
 	template <typename T>
 	bool operator!=(const shared_ptr<T> &a, std::nullptr_t) noexcept
 	{
-		return a.ptr != nullptr;
+		return (bool)a;
 	}
 
 	template <typename T>
 	bool operator==(std::nullptr_t, const shared_ptr<T> &a) noexcept
 	{
-		return a.ptr == nullptr;
+		return !a.ptr;
 	}
 
 	template <typename T>
 	bool operator!=(std::nullptr_t, const shared_ptr<T> &a) noexcept
 	{
-		return a.ptr != nullptr;
+		return (bool)a;
 	}
 
 	template <typename T, typename... Args>
