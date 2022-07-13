@@ -207,11 +207,6 @@ namespace TemAllocator
 			return ptr;
 		}
 
-		std::shared_ptr<T> &get_pointer()
-		{
-			return ptr;
-		}
-
 		operator bool() const noexcept
 		{
 			return (bool)ptr;
@@ -261,11 +256,6 @@ namespace TemAllocator
 		}
 
 		const std::weak_ptr<T> &get_pointer() const
-		{
-			return ptr;
-		}
-
-		std::weak_ptr<T> &get_pointer()
 		{
 			return ptr;
 		}
