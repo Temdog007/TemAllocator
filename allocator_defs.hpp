@@ -142,6 +142,19 @@ namespace TemAllocator
 	private:
 		std::shared_ptr<T> ptr;
 
+		shared_ptr(std::shared_ptr<T> &&p)
+			: ptr(nullptr, Deleter<T>(), Allocator<T>())
+		{
+			if (Deleter<T> *d = std::get_deleter<T>(p))
+			{
+				ptr.swap(std::move(p));
+			}
+			else
+			{
+				throw std::runtime_error("Invalid shared pointer");
+			}
+		}
+
 	public:
 		shared_ptr() : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
 		shared_ptr(std::nullptr_t) : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
@@ -179,7 +192,10 @@ namespace TemAllocator
 				ptr = p;
 				return *this;
 			}
-			throw std::runtime_error("Invalid shared pointer");
+			else
+			{
+				throw std::runtime_error("Invalid shared pointer");
+			}
 		}
 
 		shared_ptr &operator=(std::shared_ptr<T> &&p)
@@ -189,7 +205,10 @@ namespace TemAllocator
 				ptr.swap(p);
 				return *this;
 			}
-			throw std::runtime_error("Invalid shared pointer");
+			else
+			{
+				throw std::runtime_error("Invalid shared pointer");
+			}
 		}
 
 		shared_ptr &operator=(unique_ptr<T> &&uPtr) noexcept
