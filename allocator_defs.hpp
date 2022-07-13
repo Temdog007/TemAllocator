@@ -127,12 +127,6 @@ namespace TemAllocator
 	{
 		return shared_ptr<T>(allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>());
 	}
-
-	template <typename T>
-	static inline shared_ptr<T> make_shared(T *t)
-	{
-		return shared_ptr<T>(t, Deleter<T>());
-	}
 } // namespace TemAllocator
 
 namespace std
