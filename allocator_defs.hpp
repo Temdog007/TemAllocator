@@ -156,6 +156,11 @@ namespace TemAllocator
 
 		T &operator*() { return ptr.operator*(); }
 		const T &operator*() const { return ptr.operator*(); }
+
+		operator bool() const noexcept
+		{
+			return ptr.operator bool();
+		}
 	};
 
 	template <typename T>
@@ -188,6 +193,16 @@ namespace TemAllocator
 		{
 			ptr = p.ptr;
 			return *this;
+		}
+
+		shared_ptr<T> lock() const noexcept
+		{
+			return ptr.lock();
+		}
+
+		bool expired() const noexcept
+		{
+			return ptr.expired();
 		}
 	};
 
