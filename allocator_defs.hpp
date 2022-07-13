@@ -128,6 +128,13 @@ namespace TemAllocator
 		shared_ptr() noexcept : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
 		shared_ptr(T *t) : ptr(t, Deleter<T>(), Allocator<T>()) {}
 
+		template <typename... Args>
+		shared_ptr(Args &&...args)
+			: ptr(allocateAndConstruct<T>(std::forward<Args>(args)...),
+				  Deleter<T>(), Allocator<T>())
+		{
+		}
+
 		shared_ptr(const shared_ptr &p) noexcept : ptr(p.ptr) {}
 		shared_ptr(shared_ptr &&p) noexcept : ptr(std::move(p.ptr)) {}
 
@@ -256,14 +263,6 @@ namespace TemAllocator
 	{
 		return unique_ptr<T>(
 			allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>());
-	}
-
-	template <typename T, typename... Args>
-	static inline shared_ptr<T> make_shared(Args &&...args)
-	{
-		return shared_ptr<T>(
-			allocateAndConstruct<T>(std::forward<Args>(args)...),
-			Deleter<T>(), Allocator<T>());
 	}
 } // namespace TemAllocator
 
