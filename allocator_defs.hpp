@@ -132,7 +132,8 @@ namespace TemAllocator
 		std::shared_ptr<T> ptr;
 
 	public:
-		shared_ptr() noexcept : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
+		shared_ptr() : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
+		shared_ptr(std::nullptr_t) : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
 		shared_ptr(T *t) : ptr(t, Deleter<T>(), Allocator<T>()) {}
 
 		shared_ptr(const shared_ptr &p) noexcept : ptr(p.ptr) {}
