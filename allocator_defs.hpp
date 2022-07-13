@@ -186,6 +186,16 @@ namespace TemAllocator
 		T &operator*() { return ptr.operator*(); }
 		const T &operator*() const { return ptr.operator*(); }
 
+		const std::shared_ptr<T> &get_pointer() const
+		{
+			return ptr;
+		}
+
+		std::shared_ptr<T> &get_pointer()
+		{
+			return ptr;
+		}
+
 		operator bool() const noexcept
 		{
 			return (bool)ptr;
@@ -232,6 +242,16 @@ namespace TemAllocator
 		bool expired() const noexcept
 		{
 			return ptr.expired();
+		}
+
+		const std::weak_ptr<T> &get_pointer() const
+		{
+			return ptr;
+		}
+
+		std::weak_ptr<T> &get_pointer()
+		{
+			return ptr;
 		}
 	};
 
