@@ -132,12 +132,12 @@ namespace TemAllocator
 		shared_ptr(shared_ptr &&p) noexcept : ptr(std::move(p.ptr)) {}
 
 		template <typename _Yp, typename = std::is_constructible<const shared_ptr<_Yp> &>>
-		shared_ptr(const shared_ptr<_Yp> &__r) noexcept
-			: ptr(__r) {}
+		shared_ptr(const shared_ptr<_Yp> &p) noexcept
+			: ptr(p.ptr) {}
 
 		template <typename _Yp, typename = std::is_constructible<shared_ptr<_Yp>>>
-		shared_ptr(shared_ptr<_Yp> &&__r) noexcept
-			: ptr(std::move(__r)) {}
+		shared_ptr(shared_ptr<_Yp> &&p) noexcept
+			: ptr(std::move(p.ptr)) {}
 
 		shared_ptr(const weak_ptr<T> &w) : ptr(w.ptr) {}
 
