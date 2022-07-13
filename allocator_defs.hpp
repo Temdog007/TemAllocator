@@ -145,13 +145,16 @@ namespace TemAllocator
 		shared_ptr(std::shared_ptr<T> &&p)
 			: ptr(nullptr, Deleter<T>(), Allocator<T>())
 		{
-			if (Deleter<T> *d = std::get_deleter<T>(p))
+			if (p)
 			{
-				ptr.swap(std::move(p));
-			}
-			else
-			{
-				throw std::runtime_error("Invalid shared pointer");
+				if (Deleter<T> *d = std::get_deleter<T>(p))
+				{
+					ptr.swap(std::move(p));
+				}
+				else
+				{
+					throw std::runtime_error("Invalid shared pointer");
+				}
 			}
 		}
 
@@ -187,27 +190,41 @@ namespace TemAllocator
 
 		shared_ptr &operator=(const std::shared_ptr<T> &p)
 		{
-			if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+			if (p)
 			{
-				ptr = p;
-				return *this;
+				if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+				{
+					ptr = p;
+					return *this;
+				}
+				else
+				{
+					throw std::runtime_error("Invalid shared pointer");
+				}
 			}
 			else
 			{
-				throw std::runtime_error("Invalid shared pointer");
+				reset();
 			}
 		}
 
 		shared_ptr &operator=(std::shared_ptr<T> &&p)
 		{
-			if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+			if (p)
 			{
-				ptr.swap(p);
-				return *this;
+				if (Deleter<T> *d = std::get_deleter<Deleter<T>>(p))
+				{
+					ptr.swap(p);
+					return *this;
+				}
+				else
+				{
+					throw std::runtime_error("Invalid shared pointer");
+				}
 			}
 			else
 			{
-				throw std::runtime_error("Invalid shared pointer");
+				reset();
 			}
 		}
 
@@ -255,6 +272,11 @@ namespace TemAllocator
 		const std::shared_ptr<T> &get_pointer() const
 		{
 			return ptr;
+		}
+
+		void reset()
+		{
+			ptr.reset();
 		}
 
 		operator bool() const noexcept
