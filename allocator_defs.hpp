@@ -157,6 +157,26 @@ namespace TemAllocator
 			return *this;
 		}
 
+		bool operator==(const shared_ptr<T> &b) const noexcept
+		{
+			return ptr == b.ptr;
+		}
+
+		bool operator!=(const shared_ptr<T> &b) const noexcept
+		{
+			return ptr != b.ptr;
+		}
+
+		bool operator==(std::nullptr_t) const noexcept
+		{
+			return ptr == nullptr;
+		}
+
+		bool operator!=(std::nullptr_t) const noexcept
+		{
+			return ptr != nullptr;
+		}
+
 		T *get() { return ptr.get(); }
 		const T *get() const { return ptr.get(); }
 
@@ -168,7 +188,7 @@ namespace TemAllocator
 
 		operator bool() const noexcept
 		{
-			return ptr.operator bool();
+			return (bool)ptr;
 		}
 	};
 
@@ -214,42 +234,6 @@ namespace TemAllocator
 			return ptr.expired();
 		}
 	};
-
-	template <typename A, typename B>
-	bool operator==(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
-	{
-		return a.get() == b.get();
-	}
-
-	template <typename A, typename B>
-	bool operator!=(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
-	{
-		return a.get() != b.get();
-	}
-
-	template <typename T>
-	bool operator==(const shared_ptr<T> &a, std::nullptr_t) noexcept
-	{
-		return !a.ptr;
-	}
-
-	template <typename T>
-	bool operator!=(const shared_ptr<T> &a, std::nullptr_t) noexcept
-	{
-		return (bool)a;
-	}
-
-	template <typename T>
-	bool operator==(std::nullptr_t, const shared_ptr<T> &a) noexcept
-	{
-		return !a.ptr;
-	}
-
-	template <typename T>
-	bool operator!=(std::nullptr_t, const shared_ptr<T> &a) noexcept
-	{
-		return (bool)a;
-	}
 
 	template <typename T, typename... Args>
 	static inline unique_ptr<T> make_unique(Args &&...args)
