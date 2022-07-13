@@ -62,10 +62,10 @@ namespace TemAllocator
 	using LinkedList = std::list<T, Allocator<T>>;
 
 	template <typename T>
-	using Queue = std::queue<T, LinkedList<T>>;
+	using Queue = std::queue<T, Deque<T>>;
 
 	template <typename T>
-	using Stack = std::stack<T, Allocator<T>>;
+	using Stack = std::stack<T, Deque<T>>;
 
 	using UTF8Converter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t, Allocator<char32_t>, Allocator<char>>;
 
