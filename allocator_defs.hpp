@@ -154,7 +154,7 @@ namespace TemAllocator
 		shared_ptr &operator=(std::nullptr_t) noexcept
 		{
 			ptr = nullptr;
-			reutrn *this;
+			return *this;
 		}
 
 		T *operator->() { return ptr.operator->(); }
