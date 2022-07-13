@@ -110,16 +110,136 @@ namespace TemAllocator
 	template <typename T>
 	using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 
-	template <typename T, typename... Args>
-	static inline unique_ptr<T> make_unique(Args &&...args)
+	template <typename T>
+	class shared_ptr;
+
+	template <typename T>
+	class weak_ptr;
+
+	template <typename T>
+	class shared_ptr
 	{
-		return unique_ptr<T>(allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>());
+		friend class weak_ptr<T>;
+
+	private:
+		std::shared_ptr<T> ptr;
+
+	public:
+		shared_ptr() noexcept : ptr(nullptr, Deleter<T>(), Allocator<T>()) {}
+		shared_ptr(T *t) : ptr(t, Deleter<T>(), Allocator<T>()) {}
+
+		shared_ptr(const shared_ptr &p) noexcept : ptr(p) {}
+		shared_ptr(shared_ptr &&p) noexcept : ptr(std::move(p)) {}
+
+		shared_ptr(const weak_ptr<T> &w) : ptr(w.ptr) {}
+
+		shared_ptr &operator=(const shared_ptr &p) noexcept
+		{
+			ptr = p.ptr;
+			return *this;
+		}
+
+		shared_ptr &operator=(shared_ptr &&p) noexcept
+		{
+			ptr = std::move(p.ptr);
+			return *this;
+		}
+
+		shared_ptr &operator=(unique_ptr<T> &&uPtr) noexcept
+		{
+			ptr = std::move(uPtr);
+			return *this;
+		}
+
+		T *operator->() { return ptr.operator->(); }
+		const T *operator->() const { return ptr.operator->(); }
+
+		T &operator*() { return ptr.operator*(); }
+		const T &operator*() const { return ptr.operator*(); }
+	};
+
+	template <typename T>
+	class weak_ptr
+	{
+		friend class shared_ptr<T>;
+
+	private:
+		std::weak_ptr<T> ptr;
+
+	public:
+		weak_ptr() noexcept = default;
+		weak_ptr(const weak_ptr<T> &p) noexcept : ptr(p) {}
+		weak_ptr(weak_ptr<T> &&p) noexcept : ptr(std::move(p)) {}
+
+		weak_ptr(const shared_ptr<T> &p) noexcept : ptr(p) {}
+
+		weak_ptr &operator=(const weak_ptr<T> &p) noexcept
+		{
+			ptr = p.ptr;
+			return *this;
+		}
+		weak_ptr &operator=(weak_ptr<T> &&p) noexcept
+		{
+			ptr = std::move(p.ptr);
+			return *this;
+		}
+
+		weak_ptr &operator=(const shared_ptr<T> &p) noexcept
+		{
+			ptr = p.ptr;
+			return *this;
+		}
+	};
+
+	template <typename A, typename B>
+	bool operator==(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
+	{
+		return a.ptr == b.ptr;
+	}
+
+	template <typename A, typename B>
+	bool operator!=(const shared_ptr<A> &a, const shared_ptr<B> &b) noexcept
+	{
+		return a.ptr != b.ptr;
+	}
+
+	template <typename T>
+	bool operator==(const shared_ptr<T> &a, std::nullptr_t) noexcept
+	{
+		return a.ptr == nullptr;
+	}
+
+	template <typename T>
+	bool operator!=(const shared_ptr<T> &a, std::nullptr_t) noexcept
+	{
+		return a.ptr != nullptr;
+	}
+
+	template <typename T>
+	bool operator==(std::nullptr_t, const shared_ptr<T> &a) noexcept
+	{
+		return a.ptr == nullptr;
+	}
+
+	template <typename T>
+	bool operator!=(std::nullptr_t, const shared_ptr<T> &a) noexcept
+	{
+		return a.ptr != nullptr;
 	}
 
 	template <typename T, typename... Args>
-	static inline std::shared_ptr<T> make_shared(Args &&...args)
+	static inline unique_ptr<T> make_unique(Args &&...args)
 	{
-		return std::shared_ptr<T>(allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>(), Allocator<T>());
+		return unique_ptr<T>(
+			allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>());
+	}
+
+	template <typename T, typename... Args>
+	static inline shared_ptr<T> make_shared(Args &&...args)
+	{
+		return shared_ptr<T>(
+			allocateAndConstruct<T>(std::forward<Args>(args)...),
+			Deleter<T>(), Allocator<T>());
 	}
 } // namespace TemAllocator
 
