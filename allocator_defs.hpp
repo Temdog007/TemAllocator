@@ -110,12 +110,6 @@ namespace TemAllocator
 	template <typename T>
 	using unique_ptr = std::unique_ptr<T, Deleter<T>>;
 
-	template <typename T>
-	using shared_ptr = std::shared_ptr<T>;
-
-	template <typename T>
-	using weak_ptr = std::weak_ptr<T>;
-
 	template <typename T, typename... Args>
 	static inline unique_ptr<T> make_unique(Args &&...args)
 	{
@@ -123,9 +117,9 @@ namespace TemAllocator
 	}
 
 	template <typename T, typename... Args>
-	static inline shared_ptr<T> make_shared(Args &&...args)
+	static inline std::shared_ptr<T> make_shared(Args &&...args)
 	{
-		return shared_ptr<T>(allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>());
+		return std::shared_ptr<T>(allocateAndConstruct<T>(std::forward<Args>(args)...), Deleter<T>(), Allocator<T>());
 	}
 } // namespace TemAllocator
 
