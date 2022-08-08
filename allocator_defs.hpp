@@ -90,7 +90,7 @@ namespace TemAllocator
 	struct Deleter
 	{
 		constexpr Deleter() noexcept = default;
-#if __unix__
+#if __unix__ && !__EMSCRIPTEN__
 		template <typename U, typename = std::_Require<std::is_convertible<U *, T *>>>
 		constexpr Deleter(Deleter<U>) noexcept
 		{
