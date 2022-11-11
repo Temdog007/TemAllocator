@@ -93,7 +93,7 @@ namespace TemAllocator
             }
 
             const size_t size = sizeof(T) * count;
-            const uintptr_t current = static_cast<uintptr_t>(data.buffer.data()) + static_cast<uintptr_t>(data.used);
+            const uintptr_t current = reinterpret_cast<uintptr_t>(data.buffer.data()) + static_cast<uintptr_t>(data.used);
             uintptr_t used = alignForward(current, Alignment);
             used -= static_cast<uintptr_t>(data.buffer.data());
 
