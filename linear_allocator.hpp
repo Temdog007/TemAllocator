@@ -133,7 +133,7 @@ namespace TemAllocator
                 return oldPtr;
             }
 
-            void *newData = allocate(newSize);
+            T *newData = allocate(newSize);
             if (newData == nullptr)
             {
                 return nullptr;
