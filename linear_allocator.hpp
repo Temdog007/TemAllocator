@@ -32,6 +32,8 @@ namespace TemAllocator
             size_t used;
             void *previousAllocation;
             size_t previousAllocationSize;
+
+            constexpr Data() noexcept : buffer(), used(0), previousAllocation(nullptr), previousAllocationSize(0) {}
         };
 
     private:
