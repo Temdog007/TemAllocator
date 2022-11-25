@@ -34,6 +34,14 @@ namespace TemAllocator
             size_t previousAllocationSize;
 
             constexpr Data() noexcept : buffer(), used(0), previousAllocation(nullptr), previousAllocationSize(0) {}
+
+            void clear() noexcept
+            {
+                buffer.fill(0);
+                used = 0;
+                previousAllocation = nullptr;
+                previousAllocationSize = 0;
+            }
         };
 
     private:
@@ -64,7 +72,7 @@ namespace TemAllocator
          *
          * @return total available memory in bytes
          */
-        size_t getTotal() const
+        size_t getTotal() const noexcept
         {
             return S;
         }
@@ -74,7 +82,7 @@ namespace TemAllocator
          *
          * @return memory in use in bytes
          */
-        size_t getUsed() const
+        size_t getUsed() const noexcept
         {
             return data.used;
         }
@@ -82,12 +90,12 @@ namespace TemAllocator
         /**
          * @brief Clear all allocations
          */
-        void clear()
+        void clear(bool hard = false) noexcept
         {
-            data.used = 0;
+            data.clear();
         }
 
-        T *allocate(size_t count = 1)
+        T *allocate(size_t count = 1) noexcept
         {
             if (count == 0)
             {
@@ -100,9 +108,13 @@ namespace TemAllocator
             uintptr_t used = alignForward(current, Alignment);
             used -= start;
 
-            if (used + size > S)
+            if (size > S)
             {
                 return nullptr;
+            }
+            if (used + size > S)
+            {
+                clear();
             }
 
             T *ptr = reinterpret_cast<T *>(&data.buffer[used]);
@@ -112,7 +124,7 @@ namespace TemAllocator
             return ptr;
         }
 
-        T *reallocate(T *oldPtr, size_t count = 1)
+        T *reallocate(T *oldPtr, size_t count = 1) noexcept
         {
             const size_t newSize = sizeof(T) * count;
             if (oldPtr != nullptr && data.previousAllocation == oldPtr)
@@ -148,14 +160,14 @@ namespace TemAllocator
             return newData;
         }
 
-        void deallocate(void *, const size_t) {}
+        void deallocate(void *, const size_t) noexcept {}
 
-        size_t saveState()
+        size_t saveState() noexcept
         {
             return data.used;
         }
 
-        void restore(const size_t s)
+        void restore(const size_t s) noexcept
         {
             if (s < data.used)
             {
