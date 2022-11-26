@@ -102,12 +102,12 @@ namespace TemAllocator
 		}
 #endif
 
-		constexpr bool operator==(const Deleter &d) const noexcept
+		constexpr bool operator==(const Deleter &) const noexcept
 		{
 			return true;
 		}
 
-		constexpr bool operator!=(const Deleter &d) const noexcept
+		constexpr bool operator!=(const Deleter &) const noexcept
 		{
 			return false;
 		}
