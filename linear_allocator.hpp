@@ -93,6 +93,10 @@ namespace TemAllocator
         void clear(bool hard = false) noexcept
         {
             data.clear();
+            if (hard)
+            {
+                data.buffer.fill(0);
+            }
         }
 
         T *allocate(size_t count = 1) noexcept
