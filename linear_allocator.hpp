@@ -26,6 +26,11 @@ namespace TemAllocator
     class LinearAllocator
     {
     public:
+        typedef T value_type;
+
+        template <class U>
+        friend class LinearAllocator;
+
         struct Data
         {
             std::array<uint8_t, S> buffer;
@@ -49,13 +54,14 @@ namespace TemAllocator
 
     public:
         LinearAllocator(Data &data) noexcept : data(data) {}
-        LinearAllocator(const LinearAllocator &) = delete;
+        LinearAllocator(const LinearAllocator &u) noexcept : data(u.data) {}
         LinearAllocator(LinearAllocator &&) = delete;
 
         ~LinearAllocator() {}
 
         template <class U>
         LinearAllocator(const LinearAllocator<U, S> &u) noexcept : data(u.data) {}
+
         template <class U>
         bool operator==(const LinearAllocator<U, S> &) const noexcept
         {
