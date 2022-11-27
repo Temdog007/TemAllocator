@@ -22,38 +22,43 @@ namespace TemAllocator
         return ptr;
     }
 
+    template <size_t S>
+    struct LinearAllocatorData
+    {
+        std::array<uint8_t, S> buffer;
+        size_t used;
+        void *previousAllocation;
+        size_t previousAllocationSize;
+
+        constexpr LinearAllocatorData() noexcept
+            : buffer(), used(0),
+              previousAllocation(nullptr), previousAllocationSize(0) {}
+
+        void clear() noexcept
+        {
+            buffer.fill(0);
+            used = 0;
+            previousAllocation = nullptr;
+            previousAllocationSize = 0;
+        }
+    };
+
     template <typename T, size_t S>
     class LinearAllocator
     {
     public:
         typedef T value_type;
 
-        template <class U>
+        template <class T2, size_t S2>
         friend class LinearAllocator;
 
-        struct Data
-        {
-            std::array<uint8_t, S> buffer;
-            size_t used;
-            void *previousAllocation;
-            size_t previousAllocationSize;
-
-            constexpr Data() noexcept : buffer(), used(0), previousAllocation(nullptr), previousAllocationSize(0) {}
-
-            void clear() noexcept
-            {
-                buffer.fill(0);
-                used = 0;
-                previousAllocation = nullptr;
-                previousAllocationSize = 0;
-            }
-        };
-
     private:
-        Data &data;
+        LinearAllocatorData<S> &data;
 
     public:
-        LinearAllocator(Data &data) noexcept : data(data) {}
+        LinearAllocator(LinearAllocatorData<S> &data) noexcept : data(data) {}
+
+        LinearAllocator() = delete;
         LinearAllocator(const LinearAllocator &u) noexcept : data(u.data) {}
         LinearAllocator(LinearAllocator &&) = delete;
 
