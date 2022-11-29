@@ -59,8 +59,7 @@ namespace TemAllocator
         LinearAllocator(LinearAllocatorData<S> &data) noexcept : data(data) {}
 
         LinearAllocator() = delete;
-        LinearAllocator(const LinearAllocator &u) noexcept : data(u.data) {}
-        LinearAllocator(LinearAllocator &&) = delete;
+        LinearAllocator(LinearAllocator &u) noexcept : data(u.data) {}
 
         ~LinearAllocator() {}
 
