@@ -22,41 +22,67 @@ namespace TemAllocator
         return ptr;
     }
 
-    template <size_t S>
     struct LinearAllocatorData
     {
-        std::array<uint8_t, S> buffer;
         size_t used;
         void *previousAllocation;
         size_t previousAllocationSize;
 
         constexpr LinearAllocatorData() noexcept
-            : buffer(), used(0),
+            : used(0),
               previousAllocation(nullptr), previousAllocationSize(0) {}
 
-        void clear() noexcept
+        virtual ~LinearAllocatorData() {}
+
+        virtual uint8_t *getBuffer() = 0;
+        virtual size_t getBufferSize() const = 0;
+
+        virtual void clear(bool hard) noexcept = 0;
+    };
+
+    template <size_t S>
+    struct FixedSizeLinearAllocatorData : public LinearAllocatorData
+    {
+        std::array<uint8_t, S> buffer;
+
+        constexpr FixedSizeLinearAllocatorData() noexcept
+            : LinearAllocatorData(), buffer() {}
+
+        ~FixedSizeLinearAllocatorData() {}
+
+        uint8_t *getBuffer() override
         {
-            buffer.fill(0);
+            return buffer.data();
+        }
+
+        size_t getBufferSize() const override { return S; }
+
+        void clear(bool hard) noexcept override
+        {
             used = 0;
             previousAllocation = nullptr;
             previousAllocationSize = 0;
+            if (hard)
+            {
+                buffer.fill(0);
+            }
         }
     };
 
-    template <typename T, size_t S>
+    template <typename T>
     class LinearAllocator
     {
     public:
         typedef T value_type;
 
-        template <class T2, size_t S2>
+        template <class T2>
         friend class LinearAllocator;
 
     private:
-        LinearAllocatorData<S> &data;
+        LinearAllocatorData &data;
 
     public:
-        LinearAllocator(LinearAllocatorData<S> &data) noexcept : data(data) {}
+        LinearAllocator(LinearAllocatorData &a) noexcept : data(a) {}
 
         LinearAllocator() = delete;
         LinearAllocator(LinearAllocator &u) noexcept : data(u.data) {}
@@ -64,15 +90,15 @@ namespace TemAllocator
         ~LinearAllocator() {}
 
         template <class U>
-        LinearAllocator(const LinearAllocator<U, S> &u) noexcept : data(u.data) {}
+        LinearAllocator(const LinearAllocator<U> &u) noexcept : data(u.data) {}
 
         template <class U>
-        bool operator==(const LinearAllocator<U, S> &) const noexcept
+        bool operator==(const LinearAllocator<U> &) const noexcept
         {
             return true;
         }
         template <class U>
-        bool operator!=(const LinearAllocator<U, S> &) const noexcept
+        bool operator!=(const LinearAllocator<U> &) const noexcept
         {
             return false;
         }
@@ -84,7 +110,7 @@ namespace TemAllocator
          */
         size_t getTotal() const noexcept
         {
-            return S;
+            return data.getBufferSize();
         }
 
         /**
@@ -102,11 +128,7 @@ namespace TemAllocator
          */
         void clear(bool hard = false) noexcept
         {
-            data.clear();
-            if (hard)
-            {
-                data.buffer.fill(0);
-            }
+            data.clear(hard);
         }
 
         T *allocate(size_t count = 1) noexcept
@@ -117,21 +139,22 @@ namespace TemAllocator
             }
 
             const size_t size = sizeof(T) * count;
-            const uintptr_t start = reinterpret_cast<uintptr_t>(data.buffer.data());
+            uint8_t *buffer = data.getBuffer();
+            const uintptr_t start = reinterpret_cast<uintptr_t>(buffer);
             const uintptr_t current = start + static_cast<uintptr_t>(data.used);
             uintptr_t used = alignForward(current, Alignment);
             used -= start;
 
-            if (size > S)
+            if (size > data.getBufferSize())
             {
                 return nullptr;
             }
-            if (used + size > S)
+            if (used + size > data.getBufferSize())
             {
                 clear();
             }
 
-            T *ptr = reinterpret_cast<T *>(&data.buffer[used]);
+            T *ptr = reinterpret_cast<T *>(&buffer[used]);
             data.used = used + size;
             data.previousAllocation = ptr;
             data.previousAllocationSize = size;
@@ -150,12 +173,13 @@ namespace TemAllocator
                 else
                 {
                     const size_t diff = newSize - data.previousAllocationSize;
-                    if (data.used + diff > S)
+                    if (data.used + diff > data.getBufferSize())
                     {
                         return nullptr;
                     }
                     data.used += diff;
-                    memset(&data.buffer[data.used], 0, diff);
+                    uint8_t *buffer = data.getBuffer();
+                    memset(&buffer[data.used], 0, diff);
                 }
                 data.previousAllocationSize = newSize;
                 return oldPtr;
