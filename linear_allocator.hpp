@@ -40,7 +40,7 @@ namespace TemAllocator
 
         size_t getBufferSize() const
         {
-            return static_cast<Data *>(this)->getBufferSize();
+            return static_cast<const Data *>(this)->getBufferSize();
         }
 
         void clear(bool hard) noexcept
@@ -84,7 +84,7 @@ namespace TemAllocator
     public:
         typedef T value_type;
 
-        template <class T2>
+        template <class T2, class D2>
         friend class LinearAllocator;
 
     private:
@@ -94,12 +94,15 @@ namespace TemAllocator
         LinearAllocator(LinearAllocatorData<D> &a) noexcept : data(a) {}
 
         LinearAllocator() = delete;
-        LinearAllocator(LinearAllocator &u) noexcept : data(u.data) {}
+        LinearAllocator(const LinearAllocator &u) noexcept : data(u.data) {}
+        LinearAllocator(LinearAllocator &&u) noexcept : data(u.data) {}
 
         ~LinearAllocator() {}
 
         template <class U>
         LinearAllocator(const LinearAllocator<U, D> &u) noexcept : data(u.data) {}
+        template <class U>
+        LinearAllocator(LinearAllocator<U, D> &&u) noexcept : data(u.data) {}
 
         template <class U>
         bool operator==(const LinearAllocator<U, D> &) const noexcept
