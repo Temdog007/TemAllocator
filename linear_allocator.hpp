@@ -22,6 +22,7 @@ namespace TemAllocator
         return ptr;
     }
 
+    template <typename Data>
     struct LinearAllocatorData
     {
         size_t used;
@@ -32,36 +33,44 @@ namespace TemAllocator
             : used(0),
               previousAllocation(nullptr), previousAllocationSize(0) {}
 
-        virtual ~LinearAllocatorData() {}
-
-        virtual uint8_t *getBuffer() = 0;
-        virtual size_t getBufferSize() const = 0;
-
-        virtual void clear(bool hard) noexcept = 0;
-    };
-
-    template <size_t S>
-    struct FixedSizeLinearAllocatorData : public LinearAllocatorData
-    {
-        std::array<uint8_t, S> buffer;
-
-        constexpr FixedSizeLinearAllocatorData() noexcept
-            : LinearAllocatorData(), buffer() {}
-
-        ~FixedSizeLinearAllocatorData() {}
-
-        uint8_t *getBuffer() override
+        uint8_t *getBuffer()
         {
-            return buffer.data();
+            return static_cast<Data *>(this)->getBuffer();
         }
 
-        size_t getBufferSize() const override { return S; }
+        size_t getBufferSize() const
+        {
+            return static_cast<Data *>(this)->getBufferSize();
+        }
 
-        void clear(bool hard) noexcept override
+        void clear(bool hard) noexcept
         {
             used = 0;
             previousAllocation = nullptr;
             previousAllocationSize = 0;
+            static_cast<Data *>(this)->clear(hard);
+        }
+    };
+
+    template <size_t S>
+    struct FixedSizeLinearAllocatorData
+        : public LinearAllocatorData<FixedSizeLinearAllocatorData<S>>
+    {
+        std::array<uint8_t, S> buffer;
+
+        constexpr FixedSizeLinearAllocatorData() noexcept
+            : LinearAllocatorData<FixedSizeLinearAllocatorData<S>>(),
+              buffer() {}
+
+        uint8_t *getBuffer()
+        {
+            return buffer.data();
+        }
+
+        size_t getBufferSize() const { return S; }
+
+        void clear(bool hard) noexcept
+        {
             if (hard)
             {
                 buffer.fill(0);
@@ -69,7 +78,7 @@ namespace TemAllocator
         }
     };
 
-    template <typename T>
+    template <typename T, typename D>
     class LinearAllocator
     {
     public:
@@ -79,10 +88,10 @@ namespace TemAllocator
         friend class LinearAllocator;
 
     private:
-        LinearAllocatorData &data;
+        LinearAllocatorData<D> &data;
 
     public:
-        LinearAllocator(LinearAllocatorData &a) noexcept : data(a) {}
+        LinearAllocator(LinearAllocatorData<D> &a) noexcept : data(a) {}
 
         LinearAllocator() = delete;
         LinearAllocator(LinearAllocator &u) noexcept : data(u.data) {}
@@ -90,15 +99,15 @@ namespace TemAllocator
         ~LinearAllocator() {}
 
         template <class U>
-        LinearAllocator(const LinearAllocator<U> &u) noexcept : data(u.data) {}
+        LinearAllocator(const LinearAllocator<U, D> &u) noexcept : data(u.data) {}
 
         template <class U>
-        bool operator==(const LinearAllocator<U> &) const noexcept
+        bool operator==(const LinearAllocator<U, D> &) const noexcept
         {
             return true;
         }
         template <class U>
-        bool operator!=(const LinearAllocator<U> &) const noexcept
+        bool operator!=(const LinearAllocator<U, D> &) const noexcept
         {
             return false;
         }
