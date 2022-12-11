@@ -164,6 +164,7 @@ namespace TemAllocator
             if (used + size > data.getBufferSize())
             {
                 clear();
+                used = 0;
             }
 
             T *ptr = reinterpret_cast<T *>(&buffer[used]);
@@ -176,6 +177,10 @@ namespace TemAllocator
         T *reallocate(T *oldPtr, size_t count = 1) noexcept
         {
             const size_t newSize = sizeof(T) * count;
+            if (newSize > data.getBufferSize())
+            {
+                return nullptr;
+            }
             if (oldPtr != nullptr && data.previousAllocation == oldPtr)
             {
                 if (data.previousAllocationSize > newSize)
@@ -185,9 +190,9 @@ namespace TemAllocator
                 else
                 {
                     const size_t diff = newSize - data.previousAllocationSize;
-                    if (data.used + diff > data.getBufferSize())
+                    if (data.used + diff <= data.getBufferSize())
                     {
-                        return nullptr;
+                        goto doAllocation;
                     }
                     data.used += diff;
                     uint8_t *buffer = data.getBuffer();
@@ -197,6 +202,7 @@ namespace TemAllocator
                 return oldPtr;
             }
 
+        doAllocation:
             T *newData = allocate(newSize);
             if (newData == nullptr)
             {
