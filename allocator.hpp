@@ -376,12 +376,6 @@ namespace TemAllocator
 		size_t getBlockSize(const T *const p) const;
 	};
 
-#if __ANDROID__
-#define ALLOCATOR_ALIGNMENT 16
-#else
-#define ALLOCATOR_ALIGNMENT (2 * sizeof(void *))
-#endif
-
 	template <class T>
 	T *Allocator<T>::allocate(const size_t requestedCount)
 	{
@@ -396,8 +390,8 @@ namespace TemAllocator
 		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		// Align memory just to be safe
-		size_t size = std::max<size_t>(requestedSize, ALLOCATOR_ALIGNMENT);
-		size += ALLOCATOR_ALIGNMENT - (size % ALLOCATOR_ALIGNMENT);
+		size_t size = std::max<size_t>(requestedSize, alignof(T));
+		size += alignof(T) - (size % alignof(T));
 		const size_t allocateSize = size + sizeof(FreeListNode);
 
 		FreeListNode *affectedNode = nullptr;
@@ -447,8 +441,8 @@ namespace TemAllocator
 
 		// Align memory just to be safe
 		size_t size = sizeof(T) * count;
-		size = std::max<size_t>(size, ALLOCATOR_ALIGNMENT);
-		size += ALLOCATOR_ALIGNMENT - (size % ALLOCATOR_ALIGNMENT);
+		size = std::max<size_t>(size, alignof(T));
+		size += alignof(T) - (size % alignof(T));
 
 		// Get the current memory block
 		const size_t currentAddress = (size_t)oldPtr;

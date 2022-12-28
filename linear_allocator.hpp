@@ -5,8 +5,6 @@
 
 namespace TemAllocator
 {
-    extern const size_t Alignment;
-
     constexpr bool isPowerOfTwo(uintptr_t x)
     {
         return (x & (x - 1)) == 0;
@@ -154,7 +152,7 @@ namespace TemAllocator
             uint8_t *buffer = data.getBuffer();
             const uintptr_t start = reinterpret_cast<uintptr_t>(buffer);
             const uintptr_t current = start + static_cast<uintptr_t>(data.used);
-            uintptr_t used = alignForward(current, Alignment);
+            uintptr_t used = alignForward(current, alignof(T));
             used -= start;
 
             if (size > data.getBufferSize())
