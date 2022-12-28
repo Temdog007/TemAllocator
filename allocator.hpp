@@ -179,7 +179,7 @@ namespace TemAllocator
 		 */
 		void findBest(const size_t size, FreeListNode *&previousNode, FreeListNode *&foundNode)
 		{
-			size_t smallestDiff = SIZE_MAX;
+			size_t smallestDiff = std::numeric_limits<size_t>::max();
 			FreeListNode *bestBlock = nullptr;
 			FreeListNode *bestPrevBlock = nullptr;
 			FreeListNode *it = list;
@@ -390,7 +390,7 @@ namespace TemAllocator
 		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		// Align memory just to be safe
-		size_t size = std::max<size_t>(requestedSize, alignof(T));
+		size_t size = std::max(requestedSize, sizeof(size_t));
 		size += alignof(T) - (size % alignof(T));
 		const size_t allocateSize = size + sizeof(FreeListNode);
 
