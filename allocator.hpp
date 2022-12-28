@@ -263,6 +263,8 @@ namespace TemAllocator
 		}
 	};
 
+	constexpr size_t MinimumAllocationSize = 16;
+
 	/**
 	 * Data used by default constructor of Allocators
 	 *
@@ -390,7 +392,7 @@ namespace TemAllocator
 		std::lock_guard<AllocatorData::Mutex> g(ad.mutex);
 
 		// Align memory just to be safe
-		size_t size = std::max(requestedSize, sizeof(size_t));
+		size_t size = std::max(requestedSize, MinimumAllocationSize);
 		size += alignof(T) - (size % alignof(T));
 		const size_t allocateSize = size + sizeof(FreeListNode);
 
@@ -441,7 +443,7 @@ namespace TemAllocator
 
 		// Align memory just to be safe
 		size_t size = sizeof(T) * count;
-		size = std::max<size_t>(size, sizeof(size_t));
+		size = std::max<size_t>(size, MinimumAllocationSize);
 		size += alignof(T) - (size % alignof(T));
 
 		// Get the current memory block
