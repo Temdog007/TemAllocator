@@ -441,7 +441,7 @@ namespace TemAllocator
 
 		// Align memory just to be safe
 		size_t size = sizeof(T) * count;
-		size = std::max<size_t>(size, alignof(T));
+		size = std::max<size_t>(size, sizeof(size_t));
 		size += alignof(T) - (size % alignof(T));
 
 		// Get the current memory block
