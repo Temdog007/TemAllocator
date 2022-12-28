@@ -393,7 +393,7 @@ namespace TemAllocator
 
 		// Align memory just to be safe
 		size_t size = std::max(requestedSize, MinimumAllocationSize);
-		size += alignof(T) - (size % alignof(T));
+		size += MinimumAllocationSize - (size % MinimumAllocationSize);
 		const size_t allocateSize = size + sizeof(FreeListNode);
 
 		FreeListNode *affectedNode = nullptr;
@@ -444,7 +444,7 @@ namespace TemAllocator
 		// Align memory just to be safe
 		size_t size = sizeof(T) * count;
 		size = std::max<size_t>(size, MinimumAllocationSize);
-		size += alignof(T) - (size % alignof(T));
+		size += MinimumAllocationSize - (size % MinimumAllocationSize);
 
 		// Get the current memory block
 		const size_t currentAddress = (size_t)oldPtr;
