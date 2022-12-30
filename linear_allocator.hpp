@@ -24,12 +24,10 @@ namespace TemAllocator
     struct LinearAllocatorData
     {
         size_t used;
-        void *previousAllocation;
         size_t previousAllocationSize;
 
         constexpr LinearAllocatorData() noexcept
-            : used(0),
-              previousAllocation(nullptr), previousAllocationSize(0) {}
+            : used(0), previousAllocationSize(0) {}
 
         uint8_t *getBuffer()
         {
@@ -44,7 +42,6 @@ namespace TemAllocator
         void clear(bool hard) noexcept
         {
             used = 0;
-            previousAllocation = nullptr;
             previousAllocationSize = 0;
             static_cast<Data *>(this)->clear(hard);
         }
@@ -141,7 +138,7 @@ namespace TemAllocator
             data.clear(hard);
         }
 
-        T *allocate(size_t count = 1) noexcept
+        T *allocate(size_t count = 1)
         {
             if (count == 0)
             {
@@ -150,36 +147,37 @@ namespace TemAllocator
 
             const size_t size = sizeof(T) * count;
             uint8_t *buffer = data.getBuffer();
-            const uintptr_t start = reinterpret_cast<uintptr_t>(buffer);
-            const uintptr_t current = start + static_cast<uintptr_t>(data.used);
-            uintptr_t used = alignForward(current, alignof(T));
-            used -= start;
+            const uintptr_t bufferStart = reinterpret_cast<uintptr_t>(buffer);
+            const uintptr_t current = bufferStart + static_cast<uintptr_t>(data.used);
+            uintptr_t allocationStart = alignForward(current, alignof(T));
+            allocationStart -= bufferStart;
 
             if (size > data.getBufferSize())
             {
-                return nullptr;
+                throw std::bad_alloc();
             }
-            if (used + size > data.getBufferSize())
+            if (allocationStart + size > data.getBufferSize())
             {
                 clear();
-                used = 0;
+                return allocate(count);
             }
 
-            T *ptr = reinterpret_cast<T *>(&buffer[used]);
-            data.used = used + size;
-            data.previousAllocation = ptr;
+            data.used = allocationStart + size;
             data.previousAllocationSize = size;
-            return ptr;
+            return reinterpret_cast<T *>(&buffer[allocationStart]);
         }
 
-        T *reallocate(T *oldPtr, size_t count = 1) noexcept
+        T *reallocate(T *oldPtr, size_t count = 1)
         {
             const size_t newSize = sizeof(T) * count;
             if (newSize > data.getBufferSize())
             {
-                return nullptr;
+                throw std::bad_alloc();
             }
-            if (oldPtr != nullptr && data.previousAllocation == oldPtr)
+
+            uint8_t *buffer = data.getBuffer();
+            void *previousAllocation = &buffer[data.used - data.previousAllocationSize];
+            if (oldPtr != nullptr && previousAllocation == oldPtr)
             {
                 if (data.previousAllocationSize > newSize)
                 {
@@ -193,21 +191,15 @@ namespace TemAllocator
                         goto doAllocation;
                     }
                     data.used += diff;
-                    uint8_t *buffer = data.getBuffer();
-                    memset(&buffer[data.used], 0, diff);
                 }
                 data.previousAllocationSize = newSize;
                 return oldPtr;
             }
 
         doAllocation:
-            T *newData = allocate(newSize);
-            if (newData == nullptr)
-            {
-                return nullptr;
-            }
+            T *newData = allocate(count);
 
-            if (oldPtr != nullptr)
+            if (newData != nullptr && oldPtr != nullptr)
             {
                 memmove(newData, oldPtr, newSize);
             }
