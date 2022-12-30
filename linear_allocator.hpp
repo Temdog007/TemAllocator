@@ -62,7 +62,7 @@ namespace TemAllocator
             return buffer.data();
         }
 
-        size_t getBufferSize() const { return S; }
+        constexpr size_t getBufferSize() const { return buffer.size(); }
 
         void clear(bool hard) noexcept
         {
@@ -138,6 +138,14 @@ namespace TemAllocator
             data.clear(hard);
         }
 
+        static uintptr_t calculatePadding(uintptr_t current)
+        {
+            const auto multiplier = (current / alignof(T)) + 1;
+            const auto alignedAddress = multiplier * alignof(T);
+            const auto padding = alignedAddress - current;
+            return padding;
+        }
+
         T *allocate(size_t count = 1)
         {
             if (count == 0)
@@ -146,25 +154,31 @@ namespace TemAllocator
             }
 
             const size_t size = sizeof(T) * count;
-            uint8_t *buffer = data.getBuffer();
-            const uintptr_t bufferStart = reinterpret_cast<uintptr_t>(buffer);
-            const uintptr_t current = bufferStart + static_cast<uintptr_t>(data.used);
-            uintptr_t allocationStart = alignForward(current, alignof(T));
-            allocationStart -= bufferStart;
-
             if (size > data.getBufferSize())
             {
                 throw std::bad_alloc();
             }
-            if (allocationStart + size > data.getBufferSize())
+
+            uint8_t *buffer = data.getBuffer();
+            const uintptr_t currentAddress =
+                reinterpret_cast<uintptr_t>(buffer) + static_cast<uintptr_t>(data.used);
+
+            size_t padding = 0;
+            if ((data.used % alignof(T)) != 0)
+            {
+                padding = calculatePadding(currentAddress);
+            }
+
+            if (data.used + padding + size > data.getBufferSize())
             {
                 clear();
                 return allocate(count);
             }
 
-            data.used = allocationStart + size;
-            data.previousAllocationSize = size;
-            return reinterpret_cast<T *>(&buffer[allocationStart]);
+            data.used += padding;
+            const uintptr_t nextAddress = currentAddress + padding;
+            data.used += size;
+            return reinterpret_cast<T *>(nextAddress);
         }
 
         T *reallocate(T *oldPtr, size_t count = 1)
@@ -207,20 +221,5 @@ namespace TemAllocator
         }
 
         void deallocate(void *, const size_t) noexcept {}
-
-        size_t saveState() noexcept
-        {
-            return data.used;
-        }
-
-        void restore(const size_t s) noexcept
-        {
-            if (s < data.used)
-            {
-                data.used = s;
-                data.previousAllocation = nullptr;
-                data.previousAllocationSize = 0;
-            }
-        }
     };
 }
