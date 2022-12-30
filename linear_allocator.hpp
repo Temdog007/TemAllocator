@@ -5,14 +5,14 @@
 
 namespace TemAllocator
 {
-    constexpr bool isPowerOfTwo(uintptr_t x)
+    constexpr bool isPowerOfTwo(size_t x)
     {
         return (x & (x - 1)) == 0;
     }
 
-    constexpr uintptr_t alignForward(uintptr_t ptr, const uintptr_t align)
+    constexpr size_t alignForward(size_t ptr, const size_t align)
     {
-        const uintptr_t modulo = ptr & (align - 1);
+        const size_t modulo = ptr & (align - 1);
         if (modulo != 0)
         {
             ptr += align - modulo;
@@ -138,7 +138,7 @@ namespace TemAllocator
             data.clear(hard);
         }
 
-        static uintptr_t calculatePadding(uintptr_t current)
+        static size_t calculatePadding(size_t current)
         {
             const auto multiplier = (current / alignof(T)) + 1;
             const auto alignedAddress = multiplier * alignof(T);
@@ -160,8 +160,8 @@ namespace TemAllocator
             }
 
             uint8_t *buffer = data.getBuffer();
-            const uintptr_t currentAddress =
-                reinterpret_cast<uintptr_t>(buffer) + static_cast<uintptr_t>(data.used);
+            const size_t currentAddress =
+                reinterpret_cast<size_t>(buffer) + static_cast<size_t>(data.used);
 
             size_t padding = 0;
             if ((data.used % alignof(T)) != 0)
@@ -176,8 +176,9 @@ namespace TemAllocator
             }
 
             data.used += padding;
-            const uintptr_t nextAddress = currentAddress + padding;
+            const size_t nextAddress = currentAddress + padding;
             data.used += size;
+            data.previousAllocationSize = size;
             return reinterpret_cast<T *>(nextAddress);
         }
 
