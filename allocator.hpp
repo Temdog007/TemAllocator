@@ -265,12 +265,14 @@ namespace TemAllocator
 
 	constexpr size_t MinimumAllocationSize = 16;
 
+#if DEFINE_GLOBAL_ALLOCATOR
 	/**
 	 * Data used by default constructor of Allocators
 	 *
 	 * @ref TemAllocator::Allocator
 	 */
 	extern AllocatorData globalAllocatorData;
+#endif
 
 	/**
 	 * @brief Free list allocator
@@ -290,9 +292,11 @@ namespace TemAllocator
 		AllocatorData &ad;
 
 	public:
+#if DEFINE_GLOBAL_ALLOCATOR
 		Allocator() noexcept : ad(globalAllocatorData)
 		{
 		}
+#endif
 		Allocator(AllocatorData &ad) noexcept : ad(ad)
 		{
 		}
