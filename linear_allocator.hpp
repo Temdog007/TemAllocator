@@ -176,7 +176,7 @@ namespace TemAllocator
             const size_t size = sizeof(T) * count;
             if (size > data.getBufferSize())
             {
-                throw std::bad_alloc();
+                throw bad_alloc();
             }
 
             uint8_t *buffer = data.getBuffer();
@@ -207,7 +207,7 @@ namespace TemAllocator
             const size_t newSize = sizeof(T) * count;
             if (newSize > data.getBufferSize())
             {
-                throw std::bad_alloc();
+                throw bad_alloc();
             }
 
             uint8_t *buffer = data.getBuffer();
