@@ -146,6 +146,26 @@ namespace TemAllocator
             return padding;
         }
 
+        class bad_alloc : public std::exception
+        {
+        public:
+            bad_alloc() throw() {}
+
+#if __cplusplus >= 201103L
+            bad_alloc(const bad_alloc &) = default;
+            bad_alloc &operator=(const bad_alloc &) = default;
+#endif
+
+            virtual ~bad_alloc() throw()
+            {
+            }
+
+            virtual const char *what() const throw()
+            {
+                return "Failed to allocate from TemLang linear allocator";
+            }
+        };
+
         T *allocate(size_t count = 1)
         {
             if (count == 0)
