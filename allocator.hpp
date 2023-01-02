@@ -378,6 +378,26 @@ namespace TemAllocator
 		size_t getBlockSize(const T *const p) const;
 	};
 
+	class bad_alloc : public std::exception
+	{
+	public:
+		bad_alloc() throw() {}
+
+#if __cplusplus >= 201103L
+		bad_alloc(const bad_alloc &) = default;
+		bad_alloc &operator=(const bad_alloc &) = default;
+#endif
+
+		virtual ~bad_alloc() throw()
+		{
+		}
+
+		virtual const char *what() const throw()
+		{
+			return "Failed to allocate from TemLang allocator";
+		}
+	};
+
 	template <class T>
 	T *Allocator<T>::allocate(const size_t requestedCount)
 	{
@@ -403,7 +423,7 @@ namespace TemAllocator
 		// If null, then there is no block that can handle the requestedSize
 		if (affectedNode == nullptr)
 		{
-			throw std::bad_alloc();
+			throw bad_alloc();
 		}
 
 		const size_t rest = affectedNode->blockSize - allocateSize;
