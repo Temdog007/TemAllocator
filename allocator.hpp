@@ -538,7 +538,7 @@ namespace TemAllocator
 		// At this point, it is determined that re-allocating is not possible.
 		// So, allocate new block, copy old block to new block, and free old block
 		T *newPtr = allocate(count);
-		memcpy(newPtr, oldPtr, oldSize);
+		memmove(newPtr, oldPtr, oldSize);
 		deallocate(oldPtr);
 		return newPtr;
 	}
