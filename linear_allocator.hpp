@@ -188,7 +188,7 @@ namespace TemAllocator
                 reinterpret_cast<size_t>(buffer) + static_cast<size_t>(data.used);
 
             size_t padding = 0;
-            if ((data.used % alignof(T)) != 0)
+            if (alignof(T) != 0 && (data.used % alignof(T)) != 0)
             {
                 padding = calculatePadding(currentAddress);
             }
@@ -216,25 +216,32 @@ namespace TemAllocator
                 throw bad_alloc();
             }
 
-            uint8_t *buffer = data.getBuffer();
-            void *previousAllocation = &buffer[data.used - data.previousAllocationSize];
-            if (oldPtr != nullptr && previousAllocation == oldPtr)
+            if (data.previousAllocationSize > data.used)
             {
-                if (data.previousAllocationSize > newSize)
+                goto doAllocation;
+            }
+
+            {
+                uint8_t *buffer = data.getBuffer();
+                void *previousAllocation = &buffer[data.used - data.previousAllocationSize];
+                if (oldPtr != nullptr && previousAllocation == oldPtr)
                 {
-                    data.used -= data.previousAllocationSize - newSize;
-                }
-                else
-                {
-                    const size_t diff = newSize - data.previousAllocationSize;
-                    if (data.used + diff <= data.getBufferSize())
+                    if (data.previousAllocationSize > newSize)
                     {
-                        goto doAllocation;
+                        data.used -= data.previousAllocationSize - newSize;
                     }
-                    data.used += diff;
+                    else
+                    {
+                        const size_t diff = newSize - data.previousAllocationSize;
+                        if (data.used + diff >= data.getBufferSize())
+                        {
+                            goto doAllocation;
+                        }
+                        data.used += diff;
+                    }
+                    data.previousAllocationSize = newSize;
+                    return oldPtr;
                 }
-                data.previousAllocationSize = newSize;
-                return oldPtr;
             }
 
         doAllocation:
