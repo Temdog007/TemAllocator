@@ -17,7 +17,6 @@
 #include "allocator.hpp"
 
 #include <string>
-#include <codecvt>
 #include <locale>
 #include <stack>
 #include <unordered_map>
@@ -66,8 +65,6 @@ namespace TemAllocator
 
 	template <typename T>
 	using Stack = std::stack<T, Deque<T>>;
-
-	using UTF8Converter = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t, Allocator<char32_t>, Allocator<char>>;
 
 	template <typename T, typename... Args>
 	static inline T *allocateAndConstruct(Args &&...args)

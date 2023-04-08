@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <array>
 #include <cstring>
+#include <stdexcept>
 
 namespace TemAllocator
 {
@@ -55,7 +56,10 @@ namespace TemAllocator
 
         constexpr FixedSizeLinearAllocatorData() noexcept
             : LinearAllocatorData<FixedSizeLinearAllocatorData<S>>(),
-              buffer() {}
+              buffer()
+        {
+            memset(&buffer, 0, sizeof(buffer));
+        }
 
         uint8_t *getBuffer()
         {
@@ -180,7 +184,7 @@ namespace TemAllocator
             }
 
             uint8_t *buffer = data.getBuffer();
-            const size_t currentAddress =
+            size_t currentAddress =
                 reinterpret_cast<size_t>(buffer) + static_cast<size_t>(data.used);
 
             size_t padding = 0;
@@ -192,7 +196,9 @@ namespace TemAllocator
             if (data.used + padding + size > data.getBufferSize())
             {
                 clear();
-                return allocate(count);
+                currentAddress = reinterpret_cast<size_t>(buffer);
+                data.used = 0;
+                padding = 0;
             }
 
             data.used += padding;
